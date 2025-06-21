@@ -46,12 +46,19 @@ export const getDashboardStats = async (req, res) => {
         }
     ]);
 
+    const recentOrders = await Order.find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate('customer', 'fullName email');
+      // .populate('items.product', 'name imageUrl price');
+
     res.json({
       totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
       totalOrders,
       totalCustomers,
       salesData,
-      topProducts
+      topProducts,
+      recentOrders
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
