@@ -8,7 +8,6 @@ export const getProducts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 export const createProduct = async (req, res) => {
   const product = new Product(req.body);
   try {
@@ -18,7 +17,6 @@ export const createProduct = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 export const updateProduct = async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
