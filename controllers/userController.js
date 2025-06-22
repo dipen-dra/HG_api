@@ -1,9 +1,12 @@
 
 
-
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+// No longer need to import cloudinary
+
+// registerUser and loginUser functions remain the same as the previous response...
+// Make sure they include 'profilePicture' in the returned userData.
 
 export const registerUser = async (req, res) => {
     const { email, fullName, password } = req.body;
@@ -18,7 +21,7 @@ export const registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({ email, fullName, password: hashedPassword });
         await newUser.save();
-        const userData = { _id: newUser._id, fullName: newUser.fullName, email: newUser.email, role: newUser.role };
+        const userData = { _id: newUser._id, fullName: newUser.fullName, email: newUser.email, role: newUser.role, profilePicture: newUser.profilePicture };
         return res.status(201).json({ success: true, message: "User registered successfully.", data: userData });
     } catch (e) {
         console.error("Registration Error:", e);
@@ -43,13 +46,12 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     
-    // Ensure the SECRET is loaded before signing
     if (!process.env.SECRET) {
         throw new Error('JWT Secret is not defined in the .env file.');
     }
 
     const token = jwt.sign({ _id: user._id, role: user.role }, process.env.SECRET, { expiresIn: '1d' });
-    const userData = { _id: user._id, fullName: user.fullName, email: user.email, role: user.role };
+    const userData = { _id: user._id, fullName: user.fullName, email: user.email, role: user.role, profilePicture: user.profilePicture };
     res.status(200).json({ success: true, data: userData, token });
   } catch (error) {
     console.error('Login error:', error);
@@ -70,4 +72,43 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
+// --- THIS IS THE UPDATED FUNCTION ---
+export const updateUserProfilePicture = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: "No file uploaded." });
+    }
 
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found." });
+        }
+
+        // Construct the URL path to be saved.
+        // req.file.path is something like "public/images/profile-pictures/filename.jpg"
+        // We want to save "/images/profile-pictures/filename.jpg"
+        const imageUrl = `/images/profile-pictures/${req.file.filename}`;
+        
+        user.profilePicture = imageUrl;
+        await user.save();
+
+        const userData = {
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            profilePicture: user.profilePicture,
+            createdAt: user.createdAt
+        };
+
+        res.status(200).json({
+            success: true,
+            message: "Profile picture updated successfully.",
+            data: userData
+        });
+
+    } catch (error) {
+        console.error("Profile picture update error:", error);
+        res.status(500).json({ success: false, message: "Server error during file update." });
+    }
+};
