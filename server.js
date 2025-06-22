@@ -139,10 +139,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // Diagnostic middleware (great for development!)
-app.use((req, res, next) => {
-  console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
+//   next();
+// });
 
 // --- Routes ---
 app.use("/api/auth", userRoutes);
