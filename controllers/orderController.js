@@ -126,14 +126,9 @@ export const getOrderById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
     
-    // Optional: You might decide if an admin should even be able to access a 'Pending Payment' order via direct link.
-    // If not, you can add this check:
-    // if (order.status === 'Pending Payment') {
-    //   return res.status(404).json({ success: false, message: 'Order not found' });
-    // }
-
     res.status(200).json({ success: true, order });
-  } catch (error) {
+  } catch (error)
+  {
     console.error("Error fetching single order:", error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
@@ -158,4 +153,22 @@ export const updateOrderStatus = async (req, res) => {
     console.error("Error updating order status:", error);
     res.status(400).json({ success: false, message: 'Failed to update order status' });
   }
+};
+
+/**
+ * @desc    Get logged in user's payment history (all orders including incomplete)
+ * @route   GET /api/orders/payment-history
+ * @access  Private
+ */
+export const getPaymentHistory = async (req, res) => {
+    try {
+        // Find all orders for the current user, including 'Pending Payment'
+        const paymentHistory = await Order.find({ customer: req.user._id })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({ success: true, history: paymentHistory });
+    } catch (error) {
+        console.error("Error fetching payment history:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
 };
