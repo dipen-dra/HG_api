@@ -19,15 +19,13 @@ export const registerUser = async (req, res) => {
         const newUser = new User({ email, fullName, password: hashedPassword });
         await newUser.save();
 
-        // --- FIX ---
-        // Add `createdAt` to the response data. Mongoose adds this field automatically.
         const userData = { 
             _id: newUser._id, 
             fullName: newUser.fullName, 
             email: newUser.email, 
             role: newUser.role, 
             profilePicture: newUser.profilePicture,
-            createdAt: newUser.createdAt // <-- ADD THIS LINE
+            createdAt: newUser.createdAt
         };
 
         return res.status(201).json({ success: true, message: "User registered successfully.", data: userData });
@@ -60,15 +58,13 @@ export const loginUser = async (req, res) => {
 
     const token = jwt.sign({ _id: user._id, role: user.role }, process.env.SECRET, { expiresIn: '1d' });
     
-    // --- FIX ---
-    // Add `createdAt` to the response data.
     const userData = { 
         _id: user._id, 
         fullName: user.fullName, 
         email: user.email, 
         role: user.role, 
         profilePicture: user.profilePicture,
-        createdAt: user.createdAt // <-- ADD THIS LINE
+        createdAt: user.createdAt
     };
 
     res.status(200).json({ success: true, data: userData, token });
@@ -80,7 +76,6 @@ export const loginUser = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
     try {
-        // This function is already correct as .select('-password') includes all other fields.
         const user = await User.findById(req.user._id).select('-password');
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -92,7 +87,37 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-// This function is already correct and will not be harmed by the changes.
+export const updateUserProfile = async (req, res) => {
+    const { fullName, email, location } = req.body;
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.fullName = fullName || user.fullName;
+        user.email = email || user.email;
+        user.location = location || user.location;
+
+        await user.save();
+        
+        const userData = {
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            profilePicture: user.profilePicture,
+            createdAt: user.createdAt,
+            location: user.location,
+        };
+
+        res.status(200).json({ success: true, message: 'Profile updated successfully', data: userData });
+    } catch (error) {
+        console.error("Update Profile Error:", error);
+        res.status(500).json({ success: false, message: 'Server error while updating profile' });
+    }
+};
+
 export const updateUserProfilePicture = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ success: false, message: "No file uploaded." });
@@ -115,7 +140,8 @@ export const updateUserProfilePicture = async (req, res) => {
             email: user.email,
             role: user.role,
             profilePicture: user.profilePicture,
-            createdAt: user.createdAt // This was already correctly included.
+            createdAt: user.createdAt,
+            location: user.location,
         };
 
         res.status(200).json({

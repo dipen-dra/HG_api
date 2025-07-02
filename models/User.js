@@ -23,12 +23,16 @@ const UserSchema = new Schema(
     },
     profilePicture: {
       type: String,
-      default: '', // Default to an empty string
+      default: '', 
     },
+    location: {
+        type: String,
+        default: '',
+    }
   },
   { timestamps: true }
 );
 
 const User = mongoose.model("User", UserSchema);
 
-export default User; 
+export default User;
