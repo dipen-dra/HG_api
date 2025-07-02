@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-// Sub-schema for items within an order
 const orderItemSchema = new Schema({
   product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
   quantity: { type: Number, required: true, min: 1 },
@@ -12,7 +11,6 @@ const orderItemSchema = new Schema({
 }, { _id: false });
 
 
-// Main order schema
 const orderSchema = new Schema({
   customer: { 
     type: Schema.Types.ObjectId, 
@@ -46,8 +44,17 @@ const orderSchema = new Schema({
   transactionId: {
     type: String,
     unique: true,
-    sparse: true // Allows multiple documents to have a null value for this field
+    sparse: true
   },
+  // --- NEW FIELDS ---
+  pointsAwarded: {
+    type: Number,
+    default: 0
+  },
+  discountApplied: {
+    type: Boolean,
+    default: false
+  }
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
