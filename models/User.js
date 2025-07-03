@@ -23,12 +23,20 @@ const UserSchema = new Schema(
     },
     profilePicture: {
       type: String,
-      default: '', // Default to an empty string
+      default: '', 
+    },
+    location: {
+        type: String,
+        default: '',
+    },
+    // --- NEW FIELD ---
+    groceryPoints: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
 );
 
 const User = mongoose.model("User", UserSchema);
-
-export default User; 
+export default User;

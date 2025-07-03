@@ -1,7 +1,5 @@
-
-
 import express from 'express';
-import { registerUser, loginUser, getUserProfile, updateUserProfilePicture } from '../controllers/userController.js';
+import { registerUser, loginUser, getUserProfile, updateUserProfilePicture, updateUserProfile } from '../controllers/userController.js';
 import { authenticateUser } from '../middlewares/authorizedUser.js';
 import multerUpload from '../middlewares/multerUpload.js';
 
@@ -13,12 +11,12 @@ router.post('/login', loginUser);
 
 // --- PROTECTED ROUTES ---
 router.get('/profile', authenticateUser, getUserProfile);
+router.put('/profile', authenticateUser, updateUserProfile);
 
-// --- ADD THIS NEW ROUTE FOR PROFILE PICTURE UPLOAD ---
 router.put(
     '/profile/picture',
     authenticateUser,
-    multerUpload.single('profilePicture'), // Field name must be 'profilePicture'
+    multerUpload.single('profilePicture'),
     updateUserProfilePicture
 );
 
